@@ -9,29 +9,29 @@ Members:
 
 Andriaharimanana Ho Flavy Oria
 
-Name 2
+Mohamed Sediki 
 
 Features:
 
-Load the map and create all entities - Name 1
+Load the map and create all entities - Mohamed 
 
-Move the Penguin - Name 1
+Move the Penguin - Flavy
 
-Update the Health (energy) when penguin eats or moves - Name 1
+Update the Health (energy) when penguin eats or moves - Flavy
 
-Attack the enemies - Name 1
+Attack the enemies - Flavy
 
-Use Wall Destroyers - Name 1
+Use Wall Destroyers - Flavy
 
-Game Over - Name 1
+Game Over - Mohamed
 
-Game Winner - Name 1
+Game Winner - Mohamed
 
 Additional Features:
 
-Ex: Main Menu - Name 1
+Main Menu - Mohamed
 
-Ex: Main Menu - Name 2
+Quit - Mohamed
 
 Setup naming conventions
 
