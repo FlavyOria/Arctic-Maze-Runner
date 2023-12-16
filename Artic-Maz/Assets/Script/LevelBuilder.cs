@@ -25,10 +25,8 @@ namespace LevelBuilderSystem
 
             void BuildLevel()
             {
-                // Get the name of the active scene
                 string sceneName = SceneManager.GetActiveScene().name;
 
-                // Construct the file path using the scene name
                 string filePath = "Assets/Scenes/" + sceneName + ".txt";
 
 
@@ -42,7 +40,7 @@ namespace LevelBuilderSystem
                     for (int x = 0; x < line.Length; x++)
                     {
                         char code = line[x];
-                        Vector3 position = new Vector3(x, -y, 0); // Adjust the position as needed
+                        Vector3 position = new Vector3(x, -y, 0);
 
                         switch (code)
                         {
@@ -64,7 +62,7 @@ namespace LevelBuilderSystem
                         }
                     }
                 }
-            }    // Properties to expose the private GameObject fields to the Unity Editor
+            }    
     public GameObject WallSprite
     {
         get => WallPrefab;
