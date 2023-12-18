@@ -2,11 +2,13 @@ using UnityEngine;
 
 public class DeplacementPersonnage : MonoBehaviour
 {
-    public float vitesse = 5f; // Vitesse de déplacement du personnage
-    public int pointsEnergie = 100; // Points d'énergie initiaux
-    public int destructeursMur = 3; // Nombre de destructeurs de mur disponibles
+    public float vitesse = 5f;
+    public int pointsEnergie = 100;
+    public int destructeursMur = 3;
 
-    private bool destructeurUtilise = false; // Indique si le destructeur actuel a été utilisé
+    private bool destructeurUtilise = false;
+
+    public Transform destination; // Destination du personnage (Home)
 
     void Update()
     {
@@ -19,7 +21,21 @@ public class DeplacementPersonnage : MonoBehaviour
         // Utiliser un destructeur de mur
         if (Input.GetKeyDown(KeyCode.Space) && destructeursMur > 0 && !destructeurUtilise)
         {
-            UtiliserDestructeurMur();
+            UtiliserDestructeurWall();
+        }
+
+        // Vérifier si le personnage est arrivé à destination
+        if (transform.position == destination.position && pointsEnergie > 0)
+        {
+            // Gagne le jeu
+            Debug.Log("GameWinner!");
+        }
+
+        // Vérifier si le personnage est mort
+        if (pointsEnergie <= 0)
+        {
+            // Perd le jeu
+            Debug.Log("GameOver!");
         }
     }
 
@@ -28,60 +44,65 @@ public class DeplacementPersonnage : MonoBehaviour
         float deplacementHorizontal = Input.GetAxis("Horizontal");
         float deplacementVertical = Input.GetAxis("Vertical");
         Vector3 deplacement = new Vector3(deplacementHorizontal, deplacementVertical, 0) * vitesse * Time.deltaTime;
+
+        // Vérifier les collisions avec les murs
+        RaycastHit2D hitWall = Physics2D.Raycast(transform.position, deplacement, 0.5f);
+        if (hitWall.collider != null && hitWall.collider.CompareTag("Wall"))
+        {
+            PerdrePointsEnergie(2);
+            // Changer de direction pour éviter le mur
+            deplacement = Vector3.zero;
+        }
+
+        // Vérifier les collisions avec les aliments
+        RaycastHit2D hitFood = Physics2D.Raycast(transform.position, deplacement, 0.5f, LayerMask.GetMask("Food"));
+        if (hitFood.collider != null)
+        {
+            GagnerPointsEnergie(hitFood.collider.GetComponent<Food>().points);
+            Destroy(hitFood.collider.gameObject);
+        }
+
+        // Appliquer le déplacement
         transform.Translate(deplacement);
 
-        // Vérifier si le personnage touche un mur
-        RaycastHit2D hitMur = Physics2D.Raycast(transform.position, deplacement, 0.5f);
-        if (hitMur.collider != null && hitMur.collider.CompareTag("Mur"))
-        {
-            // Gérer la collision avec le mur
-            PerdrePointsEnergie(2);
-        }
-
-        // Vérifier si le personnage touche un aliment (poisson ou crabe)
-        RaycastHit2D hitAliment = Physics2D.Raycast(transform.position, deplacement, 0.5f, LayerMask.GetMask("Aliment"));
-        if (hitAliment.collider != null)
-        {
-            // Gérer la collision avec l'aliment
-            GagnerPointsEnergie(hitAliment.collider.GetComponent<Aliment>().points);
-            Destroy(hitAliment.collider.gameObject); // Détruire l'aliment après l'avoir mangé
-        }
+        // Déduire des points d'énergie pour chaque déplacement
+        PerdrePointsEnergie(2);
     }
 
     void GererEnnemis()
     {
-        // Vérifier si le personnage touche un ennemi (orques)
-        RaycastHit2D hitEnnemi = Physics2D.Raycast(transform.position, Vector2.zero, 0f, LayerMask.GetMask("Ennemi"));
-        if (hitEnnemi.collider != null)
+        // Vérifier les collisions avec les ennemis
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1.5f, LayerMask.GetMask("Ennemi"));
+        foreach (Collider2D collider in colliders)
         {
-            // Gérer la collision avec l'ennemi
-            AttaquerParEnnemi(hitEnnemi.collider.GetComponent<Ennemi>().puissanceAttaque);
+            // Attaquer par chaque ennemi à proximité
+            AttaquerParEnnemi(collider.GetComponent<Ennemi>().puissanceAttaque);
+            // Changer de direction pour éviter l'ennemi
+            Vector3 direction = transform.position - collider.transform.position;
+            transform.Translate(direction.normalized * vitesse * Time.deltaTime);
         }
     }
 
-    void AttaquerParEnnemi(int puissanceAttaque)
+    public void AttaquerParEnnemi(int puissanceAttaque)
     {
         PerdrePointsEnergie(puissanceAttaque);
-        // Gérer d'autres actions en cas d'attaque par un ennemi
+        // ... (ajoutez d'autres actions en cas d'attaque par un ennemi)
     }
 
-    void UtiliserDestructeurMur()
+    void UtiliserDestructeurWall()
     {
-        // Mettez ici la logique pour détruire un mur
-        // Par exemple, trouvez le mur devant le personnage et détruisez-le
         RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.right, 0.5f);
-        if (hit.collider != null && hit.collider.CompareTag("Mur"))
+        if (hit.collider != null && hit.collider.CompareTag("Wall"))
         {
             Destroy(hit.collider.gameObject);
             destructeursMur--;
-            destructeurUtilise = true; // Marquer le destructeur comme utilisé
+            destructeurUtilise = true;
         }
     }
 
-    void GagnerPointsEnergie(int points)
+    public void GagnerPointsEnergie(int points)
     {
         pointsEnergie += points;
-        // Gérer d'autres actions lors de la récupération d'énergie (peut-être afficher un message, etc.)
     }
 
     void PerdrePointsEnergie(int points)
@@ -89,7 +110,6 @@ public class DeplacementPersonnage : MonoBehaviour
         if (pointsEnergie > 0)
         {
             pointsEnergie -= points;
-            // Gérer la perte d'énergie ici (peut-être afficher un message, etc.)
         }
     }
 }
